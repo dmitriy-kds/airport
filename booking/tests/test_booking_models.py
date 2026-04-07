@@ -1,7 +1,16 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from airport.models import Flight, Country, City, Airport, Route, Crew, AirplaneType, Airplane
+from airport.models import (
+    Flight,
+    Country,
+    City,
+    Airport,
+    Route,
+    Crew,
+    AirplaneType,
+    Airplane
+)
 from booking.models import Order, Ticket
 from user.models import User
 
