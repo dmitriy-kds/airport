@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import (
     UniqueConstraint,
     CheckConstraint,
-    Q
+    Q, F
 )
 from django.utils.text import slugify
 
@@ -213,7 +213,7 @@ class Flight(models.Model):
                 name="unique_flights"
             ),
             CheckConstraint(
-                condition=Q(departure_time__lt=arrival_time),
+                condition=Q(departure_time__lt=F("arrival_time")),
                 name="departure_before_arrival",
                 violation_error_message=(
                     "Departure time must be earlier than arrival time"
