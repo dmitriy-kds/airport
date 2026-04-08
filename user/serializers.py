@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
@@ -7,7 +7,7 @@ from user.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ("id", "email", "password", "is_staff")
         read_only_fields = ("id", "is_staff",)
         extra_kwargs = {
