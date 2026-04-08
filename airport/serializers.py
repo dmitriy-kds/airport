@@ -20,6 +20,11 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
+    country = serializers.SlugRelatedField(
+        queryset=Country.objects.all(),
+        slug_field="name"
+    )
+
     class Meta:
         model = City
         fields = ("id", "name", "country")
@@ -33,6 +38,11 @@ class CitySerializer(serializers.ModelSerializer):
 
 
 class AirportSerializer(serializers.ModelSerializer):
+    city = serializers.SlugRelatedField(
+        queryset=City.objects.all(),
+        slug_field="name"
+    )
+
     class Meta:
         model = Airport
         fields = ("id", "name", "city", "latitude", "longitude")
@@ -59,7 +69,32 @@ class AirportSerializer(serializers.ModelSerializer):
         return value
 
 
-class RouteSerializer(serializers.ModelSerializer):
+class RouteListSerializer(serializers.ModelSerializer):
+    source = serializers.SlugRelatedField(
+        queryset=Airport.objects.all(),
+        slug_field="name"
+    )
+    destination = serializers.SlugRelatedField(
+        queryset=Airport.objects.all(),
+        slug_field="name"
+    )
+    distance = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination", "distance")
+
+    def validate(self, attrs: dict) -> dict:
+        if attrs["source"] == attrs["destination"]:
+            raise serializers.ValidationError(
+                "Route must be between different airports."
+            )
+        return attrs
+
+
+class RouteDetailSerializer(serializers.ModelSerializer):
+    source = AirportSerializer()
+    destination = AirportSerializer()
     distance = serializers.FloatField(read_only=True)
 
     class Meta:

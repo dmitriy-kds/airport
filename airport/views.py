@@ -19,11 +19,12 @@ from airport.serializers import (
     CountrySerializer,
     CitySerializer,
     AirportSerializer,
-    RouteSerializer,
     CrewSerializer,
     AirplaneTypeSerializer,
     AirplaneSerializer,
-    FlightSerializer
+    FlightSerializer,
+    RouteListSerializer,
+    RouteDetailSerializer
 )
 
 
@@ -34,21 +35,36 @@ class CountryViewSet(viewsets.ModelViewSet):
 
 
 class CityViewSet(viewsets.ModelViewSet):
-    queryset = City.objects.all()
+    queryset = City.objects.all().select_related("country")
     serializer_class = CitySerializer
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
 
 class AirportViewSet(viewsets.ModelViewSet):
-    queryset = Airport.objects.all()
+    queryset = Airport.objects.all().select_related("city")
     serializer_class = AirportSerializer
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
-    serializer_class = RouteSerializer
+    queryset = Route.objects.all().select_related("source", "destination")
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
+
+    def get_queryset(self):
+        if self.action in ("list", "create"):
+            queryset = Route.objects.all().select_related("source", "destination").only(
+                "source__name", "destination__name"
+            )
+        else:
+            queryset = Route.objects.all().select_related("source", "destination")
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action in ("list", "create"):
+            serializer_class = RouteListSerializer
+        else:
+            serializer_class = RouteDetailSerializer
+        return serializer_class
 
 
 class CrewViewSet(viewsets.ModelViewSet):
