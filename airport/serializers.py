@@ -103,9 +103,14 @@ class RouteDetailSerializer(serializers.ModelSerializer):
 
 
 class CrewSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name")
+        fields = ("id", "first_name", "last_name", "full_name")
+
+    def get_full_name(self, instance: Crew) -> str:
+        return instance.first_name + " " + instance.last_name
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
