@@ -1,3 +1,5 @@
+from ast import List
+
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -126,6 +128,10 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
 class AirplaneSerializer(serializers.ModelSerializer):
     capacity = serializers.IntegerField(read_only=True)
+    airplane_type = serializers.SlugRelatedField(
+        queryset=AirplaneType.objects.all(),
+        slug_field="name"
+    )
 
     class Meta:
         model = Airplane
@@ -160,12 +166,59 @@ class AirplaneSerializer(serializers.ModelSerializer):
         return value
 
 
-class FlightSerializer(serializers.ModelSerializer):
-    crew = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Crew.objects.all(),
+class FlightListSerializer(serializers.ModelSerializer):
+    crew = serializers.SerializerMethodField()
+    route = serializers.SerializerMethodField()
+    airplane = serializers.SlugRelatedField(
+        queryset=Airplane.objects.all(),
+        slug_field="name"
     )
 
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "crew"
+        )
+
+    def get_crew(self, instance: Flight) -> list:
+        return [
+            f"{crew.first_name} {crew.last_name}"
+            for crew in instance.crew.all()
+        ]
+
+    def get_route(self, instance: Flight) -> str:
+        return f"{instance.route.source} -> {instance.route.destination}"
+
+
+class FlightDetailSerializer(serializers.ModelSerializer):
+    crew = serializers.SerializerMethodField()
+    route = RouteDetailSerializer()
+    airplane = AirplaneSerializer()
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "crew"
+        )
+
+    def get_crew(self, instance: Flight) -> list:
+        return [
+            f"{crew.first_name} {crew.last_name}"
+            for crew in instance.crew.all()
+        ]
+
+
+class FlightCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
         fields = (
