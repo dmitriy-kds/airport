@@ -130,8 +130,12 @@ class Crew(models.Model):
     class Meta:
         verbose_name_plural = "crew_members"
 
-    def __str__(self) -> str:
+    @property
+    def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    def __str__(self) -> str:
+        return self.full_name
 
 
 def create_custom_path(instance: "AirplaneType", filename: str) -> str:
