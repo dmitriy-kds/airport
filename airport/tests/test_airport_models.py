@@ -166,20 +166,15 @@ class AirplaneTypeModelTests(TestCase):
         filename = "plane.png"
         path = create_custom_path(self.airplane_type, filename)
 
-        # Check base directory
         self.assertTrue(path.startswith("uploads/images/"))
 
-        # Check slugified name
         expected_slug = slugify(self.airplane_type.name)
         self.assertIn(expected_slug, path)
 
-        # Check UUID
         self.assertIn("12345678-1234-5678-1234-567812345678", path)
 
-        # Check extension
         self.assertTrue(path.endswith(".png"))
 
-        # Check full expected path
         expected_path = os.path.join(
             "uploads/images/",
             f"{expected_slug}-12345678-1234-5678-1234-567812345678.png"
