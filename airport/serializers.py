@@ -1,5 +1,3 @@
-from ast import List
-
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -105,14 +103,11 @@ class RouteDetailSerializer(serializers.ModelSerializer):
 
 
 class CrewSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = Crew
         fields = ("id", "first_name", "last_name", "full_name")
-
-    def get_full_name(self, instance: Crew) -> str:
-        return instance.first_name + " " + instance.last_name
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -120,7 +115,17 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
         model = AirplaneType
         fields = ("id", "name", "image")
 
-    def update(self, instance, validated_data):
+
+class AirplaneTypeImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AirplaneType
+        fields = ("image",)
+
+    def update(
+            self,
+            instance: AirplaneType,
+            validated_data: dict
+    ) -> AirplaneType:
         if "image" in validated_data and instance.image:
             instance.image.delete(save=False)
         return super().update(instance, validated_data)
@@ -170,8 +175,8 @@ class FlightListSerializer(serializers.ModelSerializer):
     crew = serializers.SerializerMethodField()
     route = serializers.SerializerMethodField()
     airplane = serializers.SlugRelatedField(
-        queryset=Airplane.objects.all(),
-        slug_field="name"
+        slug_field="name",
+        read_only=True
     )
 
     class Meta:
@@ -187,7 +192,7 @@ class FlightListSerializer(serializers.ModelSerializer):
 
     def get_crew(self, instance: Flight) -> list:
         return [
-            f"{crew.first_name} {crew.last_name}"
+            crew.full_name
             for crew in instance.crew.all()
         ]
 
@@ -213,7 +218,7 @@ class FlightDetailSerializer(serializers.ModelSerializer):
 
     def get_crew(self, instance: Flight) -> list:
         return [
-            f"{crew.first_name} {crew.last_name}"
+            crew.full_name
             for crew in instance.crew.all()
         ]
 

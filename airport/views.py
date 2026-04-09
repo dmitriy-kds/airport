@@ -1,8 +1,10 @@
-from rest_framework import viewsets, status
+from django.db.models import QuerySet
+from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 
 from airport.models import (
     Country,
@@ -23,7 +25,11 @@ from airport.serializers import (
     AirplaneTypeSerializer,
     AirplaneSerializer,
     RouteListSerializer,
-    RouteDetailSerializer, FlightCreateSerializer, FlightListSerializer, FlightDetailSerializer
+    RouteDetailSerializer,
+    FlightCreateSerializer,
+    FlightListSerializer,
+    FlightDetailSerializer,
+    AirplaneTypeImageSerializer
 )
 
 
@@ -49,16 +55,7 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
-    def get_queryset(self):
-        if self.action in ("list", "create"):
-            queryset = Route.objects.all().select_related("source", "destination").only(
-                "source__name", "destination__name"
-            )
-        else:
-            queryset = Route.objects.all().select_related("source", "destination")
-        return queryset
-
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[ModelSerializer]:
         if self.action in ("list", "create"):
             serializer_class = RouteListSerializer
         else:
@@ -76,6 +73,13 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
+
+    def get_serializer_class(self) -> type[ModelSerializer]:
+        if self.action == "upload_image":
+            serializer_class = AirplaneTypeImageSerializer
+        else:
+            serializer_class = AirplaneTypeSerializer
+        return serializer_class
 
     @action(
         methods=["POST"],
@@ -101,11 +105,10 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.all().prefetch_related("crew").select_related("route", "airplane")
     serializer_class = FlightListSerializer
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[ModelSerializer]:
         if self.action in ("create", "update", "partial_update"):
             serializer_class = FlightCreateSerializer
         elif self.action == "retrieve":
@@ -113,3 +116,47 @@ class FlightViewSet(viewsets.ModelViewSet):
         else:
             serializer_class = FlightListSerializer
         return serializer_class
+
+    def get_queryset(self) -> QuerySet:
+        source_city = self.request.query_params.get("source")
+        destination_city = self.request.query_params.get("destination")
+        departure_date_str = self.request.query_params.get("departure")
+        arrival_date_str = self.request.query_params.get("arrival")
+
+        queryset = (
+            Flight.objects.all().
+            prefetch_related("crew").
+            select_related("route", "airplane")
+        )
+
+        if source_city:
+            queryset = queryset.filter(
+                route__source__city__name__icontains=source_city
+            )
+
+        if destination_city:
+            queryset = queryset.filter(
+                route__destination__city__name__icontains=destination_city
+            )
+
+        if departure_date_str:
+            field = serializers.DateField()
+            try:
+                valid_date = field.to_internal_value(departure_date_str)
+                queryset = queryset.filter(
+                    departure_time__date=valid_date
+                )
+            except serializers.ValidationError:
+                queryset = queryset.none()
+
+        if arrival_date_str:
+            field = serializers.DateField()
+            try:
+                valid_date = field.to_internal_value(arrival_date_str)
+                queryset = queryset.filter(
+                    arrival_time__date=valid_date
+                )
+            except serializers.ValidationError:
+                queryset = queryset.none()
+
+        return queryset.distinct()
