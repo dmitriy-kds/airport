@@ -75,6 +75,12 @@ class BaseAPITestCase(APITestCase):
             departure_time="2024-04-15T14:30:00",
             arrival_time="2024-04-15T18:30:00",
         )
+        cls.flight2 = Flight.objects.create(
+            route=cls.route,
+            airplane=cls.airplane,
+            departure_time="2024-06-15T14:30:00",
+            arrival_time="2024-07-15T18:30:00",
+        )
         cls.flight.crew.add(cls.crew)
         cls.ticket = Ticket.objects.create(
             row=1,
