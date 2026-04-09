@@ -52,7 +52,13 @@ class AirportViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all().select_related("source", "destination")
+    queryset = (Route.objects.all().
+                select_related(
+                    "route__source__city",
+                    "route__destination__city",
+                    "airplane__airplane_type"
+                ).prefetch_related("crew")
+    )
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
     def get_serializer_class(self) -> type[ModelSerializer]:
