@@ -56,11 +56,9 @@ class AirportViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = (Route.objects.all().
-                select_related(
-                    "source__city",
-                    "destination__city",
-                )
+    queryset = Route.objects.all().select_related(
+        "source__city",
+        "destination__city",
     )
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
@@ -74,7 +72,7 @@ class RouteViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=RouteDetailSerializer)
     def retrieve(
             self,
-            request:Request,
+            request: Request,
             *args: Any,
             **kwargs: Any
     ) -> Response:
@@ -218,7 +216,7 @@ class FlightViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=FlightDetailSerializer)
     def retrieve(
             self,
-            request:Request,
+            request: Request,
             *args: Any,
             **kwargs: Any
     ) -> Response:

@@ -1,15 +1,20 @@
+from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
+from user.models import User
+
 CREATE_USER_URL = reverse("user:create")
 TOKEN_URL = reverse("user:token_obtain_pair")
 TOKEN_REFRESH_URL = reverse("user:token_refresh")
 ME_URL = reverse("user:manage")
 
-def create_user(**params):
+
+def create_user(**params: Any) -> User:
     defaults = {"email": "test@test.com", "password": "testpass123"}
     defaults.update(params)
     return get_user_model().objects.create_user(**defaults)
@@ -85,7 +90,7 @@ class PublicUserApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_refresh_token_invalid(self):
-        response = self.client.post(TOKEN_REFRESH_URL,{"refresh": "12345"})
+        response = self.client.post(TOKEN_REFRESH_URL, {"refresh": "12345"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_me_unauthenticated(self):

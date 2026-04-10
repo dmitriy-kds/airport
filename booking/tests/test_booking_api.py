@@ -63,11 +63,10 @@ class PrivateBookingApiTests(BaseAPITestCase):
         self.assertNotEqual(self.user.email, response.data[0]["user"])
         self.assertEqual(other_user.email, response.data[0]["user"])
 
-
     def test_authenticated_create_order_same_ticket_validation(self):
         response = self.client.post(
             reverse("booking:order-list"),
-            data = {
+            data={
                 "user": self.user.email,
                 "order_tickets": [
                     {
@@ -77,7 +76,7 @@ class PrivateBookingApiTests(BaseAPITestCase):
                     }
                 ],
             },
-            format = "json"
+            format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
@@ -144,7 +143,7 @@ class PrivateBookingApiTests(BaseAPITestCase):
                     }
                 ],
             },
-            format = "json"
+            format="json"
         )
         order = Order.objects.get(pk=response.data["id"])
         self.assertEqual(order.user, self.user)
@@ -161,6 +160,6 @@ class PrivateBookingApiTests(BaseAPITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            f"Order must contain at least one ticket.",
+            "Order must contain at least one ticket.",
             response.data["order_tickets"][0]
         )

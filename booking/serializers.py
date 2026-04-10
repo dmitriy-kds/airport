@@ -3,7 +3,6 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from airport.models import Flight
-from airport.serializers import FlightDetailSerializer
 from booking.models import Order, Ticket
 from user.serializers import UserSerializer
 

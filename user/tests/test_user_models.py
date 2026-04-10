@@ -35,8 +35,8 @@ class UserModelTests(TestCase):
 
     def test_create_user_without_email_raises_value_error(self):
         data = {
-            "email":"",
-            "password":"2wsxvfr4",
+            "email": "",
+            "password": "2wsxvfr4",
         }
         with self.assertRaises(ValueError):
             User.objects.create_user(**data)
@@ -47,18 +47,18 @@ class UserModelTests(TestCase):
 
     def test_forcing_is_staff_false_on_superuser_raises_value_error(self):
         data = {
-            "email":"superuser2@test.com",
-            "password":"2wsxvfr4",
-            "is_staff":False,
+            "email": "superuser2@test.com",
+            "password": "2wsxvfr4",
+            "is_staff": False,
         }
         with self.assertRaises(ValueError):
             User.objects.create_superuser(**data)
 
     def test_forcing_is_superuser_false_on_superuser_raises_value_error(self):
         data = {
-            "email":"superuser2@test.com",
-            "password":"2wsxvfr4",
-            "is_superuser":False,
+            "email": "superuser2@test.com",
+            "password": "2wsxvfr4",
+            "is_superuser": False,
         }
         with self.assertRaises(ValueError):
             User.objects.create_superuser(**data)

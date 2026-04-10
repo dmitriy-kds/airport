@@ -123,6 +123,7 @@ class Route(models.Model):
     def __str__(self) -> str:
         return f"{self.source} -> {self.destination}"
 
+
 class Crew(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)

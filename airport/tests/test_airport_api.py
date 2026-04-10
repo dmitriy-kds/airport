@@ -145,7 +145,6 @@ class AdminAirportApiTests(BaseAPITestCase):
             response.data["non_field_errors"][0]
         )
 
-
     def test_admin_create_airport_with_invalid_longitude_validation(self):
         response = self.client.post(
             reverse("airport:airport-list"),

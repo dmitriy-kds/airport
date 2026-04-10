@@ -40,46 +40,46 @@ class TicketModelTests(BaseAPITestCase):
 
     def test_unique_flight_ticket_constraint(self):
         data = {
-            "row":1,
-            "seat":1,
-            "flight":self.flight,
-            "order":self.order,
+            "row": 1,
+            "seat": 1,
+            "flight": self.flight,
+            "order": self.order,
         }
         with self.assertRaises(ValidationError):
             Ticket.objects.create(**data)
 
     def test_positive_row_and_seat_constraint(self):
         data = {
-            "row":-1,
-            "seat":1,
-            "flight":self.flight,
-            "order":self.order,
+            "row": -1,
+            "seat": 1,
+            "flight": self.flight,
+            "order": self.order,
         }
         with self.assertRaises(ValidationError):
             Ticket.objects.create(**data)
         data = {
-            "row":1,
-            "seat":-1,
-            "flight":self.flight,
-            "order":self.order,
+            "row": 1,
+            "seat": -1,
+            "flight": self.flight,
+            "order": self.order,
         }
         with self.assertRaises(ValidationError):
             Ticket.objects.create(**data)
 
     def test_row_and_seat_within_range_constraint(self):
         data = {
-            "row":51,
-            "seat":1,
-            "flight":self.flight,
-            "order":self.order,
+            "row": 51,
+            "seat": 1,
+            "flight": self.flight,
+            "order": self.order,
         }
         with self.assertRaises(ValidationError):
             Ticket.objects.create(**data)
         data = {
-            "row":1,
-            "seat":50,
-            "flight":self.flight,
-            "order":self.order,
+            "row": 1,
+            "seat": 50,
+            "flight": self.flight,
+            "order": self.order,
         }
         with self.assertRaises(ValidationError):
             Ticket.objects.create(**data)

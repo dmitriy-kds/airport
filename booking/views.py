@@ -8,7 +8,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
-from airport.serializers import FlightCreateSerializer
 from booking.models import Order
 from booking.serializers import (
     OrderListSerializer,
@@ -30,12 +29,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         return serializer_class
 
     def get_queryset(self) -> QuerySet:
-        return (Order.objects.all().filter(user=self.request.user).
-                prefetch_related(
-                    "order_tickets",
-                    "order_tickets__flight",
-                    "order_tickets__flight__route"
-                )
+        return Order.objects.all().filter(
+            user=self.request.user
+        ).prefetch_related(
+            "order_tickets",
+            "order_tickets__flight",
+            "order_tickets__flight__route"
         )
 
     def perform_create(self, serializer: OrderCreateSerializer) -> None:
@@ -47,7 +46,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=OrderDetailSerializer)
     def retrieve(
             self,
-            request:Request,
+            request: Request,
             *args: Any,
             **kwargs: Any
     ) -> Response:

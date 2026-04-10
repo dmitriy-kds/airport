@@ -58,8 +58,8 @@ class CityModelTests(TestCase):
 
     def test_unique_cities_constraint(self):
         data = {
-            "name":self.city.name,
-            "country":self.city.country,
+            "name": self.city.name,
+            "country": self.city.country,
         }
         with self.assertRaises(IntegrityError):
             City.objects.create(**data)
@@ -94,30 +94,30 @@ class AirportModelTests(TestCase):
 
     def test_unique_coordinates_constraint(self):
         data = {
-            "name":"Boryspil",
-            "city":self.city,
-            "latitude":51.4680,
-            "longitude":0.4550,
+            "name": "Boryspil",
+            "city": self.city,
+            "latitude": 51.4680,
+            "longitude": 0.4550,
         }
         with self.assertRaises(IntegrityError):
             Airport.objects.create(**data)
 
     def test_invalid_longitude_constraint(self):
         data = {
-            "name":"Boryspil",
-            "city":self.city,
-            "latitude":80,
-            "longitude":-200,
+            "name": "Boryspil",
+            "city": self.city,
+            "latitude": 80,
+            "longitude": -200,
         }
         with self.assertRaises(IntegrityError):
             Airport.objects.create(**data)
 
     def test_invalid_latitude_constraint(self):
         data = {
-            "name":"Boryspil",
-            "city":self.city,
-            "latitude":99,
-            "longitude":-100,
+            "name": "Boryspil",
+            "city": self.city,
+            "latitude": 99,
+            "longitude": -100,
         }
         with self.assertRaises(IntegrityError):
             Airport.objects.create(**data)
@@ -220,30 +220,30 @@ class AirplaneModelTests(TestCase):
 
     def test_unique_airplanes_constraint(self):
         data = {
-            "name":"test_name",
-            "rows":50,
-            "seats_in_row":10,
-            "airplane_type":self.airplane_type,
+            "name": "test_name",
+            "rows": 50,
+            "seats_in_row": 10,
+            "airplane_type": self.airplane_type,
         }
         with self.assertRaises(IntegrityError):
             Airplane.objects.create(**data)
 
     def test_positive_rows_constraint(self):
         data = {
-            "name":"new_plane",
-            "rows":-1,
-            "seats_in_row":10,
-            "airplane_type":self.airplane_type,
+            "name": "new_plane",
+            "rows": -1,
+            "seats_in_row": 10,
+            "airplane_type": self.airplane_type,
         }
         with self.assertRaises(IntegrityError):
             Airplane.objects.create(**data)
 
     def test_positive_seats_constraint(self):
         data = {
-            "name":"new_plane",
-            "rows":10,
-            "seats_in_row":-1,
-            "airplane_type":self.airplane_type,
+            "name": "new_plane",
+            "rows": 10,
+            "seats_in_row": -1,
+            "airplane_type": self.airplane_type,
         }
         with self.assertRaises(IntegrityError):
             Airplane.objects.create(**data)
@@ -263,20 +263,20 @@ class FlightModelTests(BaseAPITestCase):
 
     def test_unique_flights_constraint(self):
         data = {
-            "route":self.route,
-            "airplane":self.airplane,
-            "departure_time":self.flight.departure_time,
-            "arrival_time":self.flight.arrival_time,
+            "route": self.route,
+            "airplane": self.airplane,
+            "departure_time": self.flight.departure_time,
+            "arrival_time": self.flight.arrival_time,
         }
         with self.assertRaises(IntegrityError):
             Flight.objects.create(**data)
 
     def test_departure_before_arrival_constraint(self):
         data = {
-            "route":self.route,
-            "airplane":self.airplane,
-            "departure_time":self.flight.arrival_time,
-            "arrival_time":self.flight.departure_time,
+            "route": self.route,
+            "airplane": self.airplane,
+            "departure_time": self.flight.arrival_time,
+            "arrival_time": self.flight.departure_time,
         }
         with self.assertRaises(IntegrityError):
             Flight.objects.create(**data)
