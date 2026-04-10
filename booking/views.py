@@ -1,8 +1,14 @@
+from typing import Any
+
 from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
+from airport.serializers import FlightCreateSerializer
 from booking.models import Order
 from booking.serializers import (
     OrderListSerializer,
@@ -34,3 +40,22 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer: OrderCreateSerializer) -> None:
         serializer.save(user=self.request.user)
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(responses=OrderDetailSerializer)
+    def retrieve(
+            self,
+            request:Request,
+            *args: Any,
+            **kwargs: Any
+    ) -> Response:
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        request=OrderCreateSerializer,
+        responses=OrderCreateSerializer
+    )
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return super().create(request, *args, **kwargs)
