@@ -2,13 +2,16 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from airport.models import Flight
 from airport.serializers import FlightDetailSerializer
 from booking.models import Order, Ticket
 from user.serializers import UserSerializer
 
 
 class TicketSerializer(serializers.ModelSerializer):
-    flight = FlightDetailSerializer()
+    flight = serializers.PrimaryKeyRelatedField(
+        queryset=Flight.objects.all()
+    )
 
     class Meta:
         model = Ticket
@@ -25,11 +28,11 @@ class TicketSerializer(serializers.ModelSerializer):
         airplane = data["flight"].airplane
         if not 1 <= data["row"] <= airplane.rows:
             raise serializers.ValidationError(
-                f"The row must be between 1 and {airplane.rows}"
+                f"The row must be between 1 and {airplane.rows}."
             )
         if not 1 <= data["seat"] <= airplane.seats_in_row:
             raise serializers.ValidationError(
-                f"The seat must be between 1 and {airplane.seats_in_row}"
+                f"The seat must be between 1 and {airplane.seats_in_row}."
             )
         return data
 
