@@ -115,6 +115,117 @@ class AdminAirportApiTests(BaseAPITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_admin_create_same_city_validation(self):
+        response = self.client.post(
+            reverse("airport:city-list"),
+            data={
+                "name": self.city2.name,
+                "country": self.country2.name,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "This city already exists in this country",
+            response.data["non_field_errors"][0]
+        )
+
+    def test_admin_create_same_airport_validation(self):
+        response = self.client.post(
+            reverse("airport:airport-list"),
+            data={
+                "name": self.airport.name,
+                "city": self.airport2.city.name,
+                "latitude": self.airport.latitude,
+                "longitude": self.airport.longitude,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Airport with these coordinates already exists",
+            response.data["non_field_errors"][0]
+        )
+
+
+    def test_admin_create_airport_with_invalid_longitude_validation(self):
+        response = self.client.post(
+            reverse("airport:airport-list"),
+            data={
+                "name": self.airport.name,
+                "city": self.airport2.city.name,
+                "latitude": self.airport.latitude,
+                "longitude": 999,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Longitude must be between -180 and 180.",
+            response.data["longitude"][0]
+        )
+
+    def test_admin_create_airport_with_invalid_latitude_validation(self):
+        response = self.client.post(
+            reverse("airport:airport-list"),
+            data={
+                "name": self.airport.name,
+                "city": self.airport2.city.name,
+                "latitude": -91,
+                "longitude": self.airport.longitude,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Latitude must be between -90 and 90.",
+            response.data["latitude"][0]
+        )
+
+    def test_admin_create_route_with_source_equals_destination_validation(
+            self
+    ):
+        response = self.client.post(
+            reverse("airport:route-list"),
+            data={
+                "source": self.route.source.name,
+                "destination": self.route.source.name,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Route must be between different airports.",
+            response.data["non_field_errors"][0]
+        )
+
+    def test_admin_create_airplane_seats_lt_1_validation(self):
+        response = self.client.post(
+            reverse("airport:airplane-list"),
+            data={
+                "name": self.airplane.name,
+                "rows": self.airplane.rows,
+                "seats_in_row": 0,
+                "airplane_type": self.airplane_type.name,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Number of seats in row must be positive.",
+            response.data["seats_in_row"][0]
+        )
+
+    def test_admin_create_airplane_with_rows_lt_1_validation(self):
+        response = self.client.post(
+            reverse("airport:airplane-list"),
+            data={
+                "name": self.airplane.name,
+                "rows": 0,
+                "seats_in_row": self.airplane.seats_in_row,
+                "airplane_type": self.airplane_type.name,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Number of rows must be positive.",
+            response.data["rows"][0]
+        )
+
     def test_admin_create_flight_returns_201(self):
         response = self.client.post(
             reverse("airport:flight-list"),
@@ -151,7 +262,7 @@ class AdminAirportApiTests(BaseAPITestCase):
         self.assertTrue(self.airplane_type.image.storage.exists(image_path))
         self.airplane_type.image.delete()
 
-    def test_create_flight_invalid_times_returns_400(self):
+    def test_create_flight_invalid_times_validation(self):
         response = self.client.post(
             reverse("airport:flight-list"),
             data={
@@ -163,8 +274,12 @@ class AdminAirportApiTests(BaseAPITestCase):
             }
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "Departure time must be earlier than arrival time.",
+            response.data["non_field_errors"][0]
+        )
 
-    def test_create_flight_duplicate_airplane_departure_returns_400(self):
+    def test_create_flight_duplicate_airplane_departure_validation(self):
         response = self.client.post(
             reverse("airport:flight-list"),
             data={
@@ -176,9 +291,15 @@ class AdminAirportApiTests(BaseAPITestCase):
             }
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "This airplane is already departing at this time.",
+            response.data["non_field_errors"][0]
+        )
 
     def test_update_flight_returns_200(self):
-        update_arrival_time = timezone.make_aware(datetime.datetime(2029, 4, 15, 18, 30))
+        update_arrival_time = timezone.make_aware(
+            datetime.datetime(2029, 4, 15, 18, 30)
+        )
         response = self.client.patch(
             reverse(
                 "airport:flight-detail",
