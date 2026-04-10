@@ -1,4 +1,8 @@
+from typing import Any
+
 from django.db.models import QuerySet
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
@@ -54,10 +58,9 @@ class AirportViewSet(viewsets.ModelViewSet):
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = (Route.objects.all().
                 select_related(
-                    "route__source__city",
-                    "route__destination__city",
-                    "airplane__airplane_type"
-                ).prefetch_related("crew")
+                    "source__city",
+                    "destination__city",
+                )
     )
     permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
@@ -67,6 +70,15 @@ class RouteViewSet(viewsets.ModelViewSet):
         else:
             serializer_class = RouteDetailSerializer
         return serializer_class
+
+    @extend_schema(responses=RouteDetailSerializer)
+    def retrieve(
+            self,
+            request:Request,
+            *args: Any,
+            **kwargs: Any
+    ) -> Response:
+        return super().retrieve(request, *args, **kwargs)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -87,6 +99,10 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
             serializer_class = AirplaneTypeSerializer
         return serializer_class
 
+    @extend_schema(
+        request=AirplaneTypeImageSerializer,
+        responses=AirplaneTypeImageSerializer
+    )
     @action(
         methods=["POST"],
         detail=True,
@@ -94,6 +110,7 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAdminUser]
     )
     def upload_image(self, request: Request, pk: int = None) -> Response:
+        """Endpoint for uploading image to a specific airplane type"""
         item = self.get_object()
         serializer = self.get_serializer(item, data=request.data)
 
@@ -166,3 +183,50 @@ class FlightViewSet(viewsets.ModelViewSet):
                 queryset = queryset.none()
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source_city",
+                type=OpenApiTypes.STR,
+                description="Filter by source city name "
+                            "(ex. ?source=ky)",
+            ),
+            OpenApiParameter(
+                "destination_city",
+                type=OpenApiTypes.STR,
+                description="Filter by destination city name "
+                            "(ex. ?destination=lon)",
+            ),
+            OpenApiParameter(
+                "departure_date",
+                type=OpenApiTypes.STR,
+                description="Filter by departure date "
+                            "(ex. ?departure=2014-09-14)",
+            ),
+            OpenApiParameter(
+                "arrival_date",
+                type=OpenApiTypes.STR,
+                description="Filter by arrival date "
+                            "(ex. ?arrival=2014-09-14)",
+            ),
+        ]
+    )
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(responses=FlightDetailSerializer)
+    def retrieve(
+            self,
+            request:Request,
+            *args: Any,
+            **kwargs: Any
+    ) -> Response:
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        request=FlightCreateSerializer,
+        responses=FlightCreateSerializer
+    )
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return super().create(request, *args, **kwargs)
