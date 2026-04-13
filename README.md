@@ -17,6 +17,7 @@ API service for airport management built with Django REST Framework.
 ## Installing / Getting started
 
 Run via Docker:
+Docker should be installed
 ```shell
 git clone https://github.com/dmitriy-kds/airport
 cd airport
@@ -24,7 +25,7 @@ cp .env.sample .env  # fill in the required values
 docker-compose up --build
 ```
 The app will be available at http://localhost:8000
-API documentation: http://localhost:8000/api/schema/swagger-ui/
+API documentation: http://localhost:8000/api/doc/swagger/
 To create a superuser:
 ```shell
 docker-compose exec app python manage.py createsuperuser
@@ -32,6 +33,7 @@ docker-compose exec app python manage.py createsuperuser
 ```
 
 Run locally:
+Install PostgresSQL and create db
 ```shell
 git clone https://github.com/dmitriy-kds/airport
 cd airport
